@@ -1,0 +1,2045 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Bot Shop - Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .nav {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-tab:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .nav-tab.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .text-success {
+            color: #28a745;
+        }
+
+        .text-danger {
+            color: #dc3545;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .file-upload {
+            border: 2px dashed #e9ecef;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: #667eea;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: block;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 15px;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        /* Badge Styles */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table {
+                font-size: 14px;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛍️ Telegram Bot Shop</h1>
+            <p>Admin Panel - Manage your digital products</p>
+        </div>
+
+        <div class="nav">
+            <div class="nav-tabs">
+                <div class="nav-tab active" onclick="showTab('dashboard')">📊 Dashboard</div>
+                <div class="nav-tab" onclick="showTab('products')">📦 Products</div>
+                <div class="nav-tab" onclick="showTab('categories')">🏷️ Categories</div>
+                <div class="nav-tab" onclick="showTab('orders')">📋 Orders</div>
+                <div class="nav-tab" onclick="showTab('transactions')">💰 Transactions</div>
+                <div class="nav-tab" onclick="showTab('redeemCodes')">🎟️ Redeem Codes</div>
+                <div class="nav-tab" onclick="showTab('tripayConfig')">💳 Tripay Config</div>
+                <div class="nav-tab" onclick="showTab('paymentMethodConfig')">⚙️ QRIS Payment Config</div>
+                <div class="nav-tab" onclick="showTab('botConfig')">🤖 Bot Config</div>
+                <div class="nav-tab" onclick="showTab('users')">👥 Users</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <h2>📊 Dashboard</h2>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="loading">Loading statistics...</div>
+                </div>
+
+                <div class="card">
+                    <h3>📈 Recent Activity</h3>
+                    <div id="recentActivity">
+                        <div class="loading">Loading recent activity...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Tab -->
+            <div id="products" class="tab-content">
+                <div class="card">
+                    <h3>➕ Add New Product</h3>
+                    <form id="addProductForm">
+                        <div class="form-group">
+                            <label for="productName">Nama Produk</label>
+                            <input type="text" id="productName" required placeholder="Masukkan nama produk">
+                        </div>
+                        <div class="form-group">
+                            <label for="productDescription">Deskripsi</label>
+                            <textarea id="productDescription" rows="3" placeholder="Tulis deskripsi produk"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="productPrice">Harga (Rupiah)</label>
+                            <input type="number" id="productPrice" step="1" min="0" required
+                                placeholder="Masukkan harga dalam Rupiah">
+                        </div>
+                        <div class="form-group">
+                            <label for="productCategory">Kategori</label>
+                            <select id="productCategory">
+                                <option value="">Pilih Kategori</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="productType">Tipe Produk</label>
+                            <select id="productType" required>
+                                <option value="">Pilih Tipe</option>
+                                <option value="file">📁 File</option>
+                                <option value="link">🔗 Link</option>
+                                <option value="code">🔑 Kode</option>
+                            </select>
+                        </div>
+                        <!-- Hapus input productLink dari form produk -->
+                        <button type="submit" class="btn btn-primary">Tambah Produk</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetProductForm()">Produk
+                            Baru</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3>📦 All Products</h3>
+                    <div id="productsList">
+                        <div class="loading">Loading products...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Tab -->
+            <div id="categories" class="tab-content">
+                <div class="card">
+                    <h3>➕ Add New Category</h3>
+                    <form id="addCategoryForm">
+                        <div class="form-group">
+                            <label for="categoryName">Category Name</label>
+                            <input type="text" id="categoryName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="categoryDescription">Description</label>
+                            <textarea id="categoryDescription" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Category</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetCategoryForm()">New
+                            Category</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3>🏷️ All Categories</h3>
+                    <div id="categoriesList">
+                        <div class="loading">Loading categories...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Tab -->
+            <div id="orders" class="tab-content">
+                <div class="card">
+                    <h3>📋 All Orders</h3>
+                    <div id="ordersList">
+                        <div class="loading">Loading orders...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Tab -->
+            <div id="transactions" class="tab-content">
+                <div class="card">
+                    <h3>💰 All Transactions</h3>
+                    <div id="transactionsList">
+                        <div class="loading">Loading transactions...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Redeem Codes Tab -->
+            <div id="redeemCodes" class="tab-content">
+                <div class="card">
+                    <h3>🎟️ Redeem Codes</h3>
+                    <div style="margin-bottom: 20px;">
+                        <h4>Create New Redeem Code</h4>
+                        <form id="createRedeemCodeForm" onsubmit="return false;">
+                            <div class="form-group">
+                                <label for="redeemCodeManual">Code (manual)</label>
+                                <input type="text" id="redeemCodeManual"
+                                    placeholder="Enter code or leave blank to generate">
+                            </div>
+                            <div class="form-group">
+                                <label for="redeemCodeAmount">Amount ($)</label>
+                                <input type="number" id="redeemCodeAmount" step="0.01" min="0.01" required>
+                            </div>
+                            <button class="btn btn-primary" onclick="createRedeemCode()">Create Code</button>
+                            <button class="btn btn-info" onclick="generateRedeemCode()">Generate Random Code</button>
+                        </form>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <h4>All Redeem Codes</h4>
+                        <div id="redeemCodesList">
+                            <div class="loading">Loading redeem codes...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tripay Configuration Tab -->
+            <div id="tripayConfig" class="tab-content">
+                <div class="card">
+                    <h3>💳 Tripay Payment Configuration</h3>
+                    <p style="margin-bottom: 20px; color: #666;">
+                        Configure your Tripay payment gateway settings. These settings are used for processing payments
+                        through Tripay.
+                    </p>
+
+                    <form id="tripayConfigForm">
+                        <div class="form-group">
+                            <label for="tripayApiKey">API Key</label>
+                            <input type="password" id="tripayApiKey" placeholder="Enter your Tripay API Key" required>
+                            <small style="color: #666;">Your Tripay API Key from the merchant dashboard</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tripayPrivateKey">Private Key</label>
+                            <input type="password" id="tripayPrivateKey" placeholder="Enter your Tripay Private Key"
+                                required>
+                            <small style="color: #666;">Your Tripay Private Key for signature generation</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tripayMerchantCode">Merchant Code</label>
+                            <input type="text" id="tripayMerchantCode" placeholder="Enter your Merchant Code" required>
+                            <small style="color: #666;">Your unique merchant identifier from Tripay</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tripayEnvironment">Environment</label>
+                            <select id="tripayEnvironment" required>
+                                <option value="sandbox">Sandbox (Testing)</option>
+                                <option value="production">Production (Live)</option>
+                            </select>
+                            <small style="color: #666;">Use Sandbox for testing, Production for live
+                                transactions</small>
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary">💾 Save Configuration</button>
+                            <button type="button" class="btn btn-info" onclick="testTripayConfig()">🧪 Test
+                                Connection</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadTripayConfig()">🔄
+                                Refresh</button>
+                        </div>
+                    </form>
+
+                    <div id="tripayConfigStatus" style="margin-top: 20px;"></div>
+                </div>
+
+                <div class="card">
+                    <h3>📋 Configuration Status</h3>
+                    <div id="tripayConfigInfo">
+                        <div class="loading">Loading configuration...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method Configuration Tab -->
+            <div id="paymentMethodConfig" class="tab-content">
+                <div class="card">
+                    <h3>⚙️ QRIS Payment Method Configuration</h3>
+                    <p style="margin-bottom: 20px; color: #666;">
+                        Configure QRIS payment method settings for balance top-ups.
+                        QRIS is the primary payment method used when users add money to their balance.
+                    </p>
+
+                    <form id="paymentMethodConfigForm">
+                        <div class="form-group">
+                            <label for="defaultPaymentMethod">Default QRIS Payment Method</label>
+                            <select id="defaultPaymentMethod" required>
+                                <option value="QRIS">QRIS by ShopeePay</option>
+                                <option value="QRISC">QRIS (Customizable)</option>
+                                <option value="QRIS2">QRIS</option>
+                            </select>
+                            <small style="color: #666;">Pilih QRIS code yang akan digunakan sebagai default payment
+                                method untuk top up saldo.</small>
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary">💾 Save Configuration</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadPaymentMethodConfig()">🔄
+                                Refresh</button>
+                        </div>
+                    </form>
+
+                    <div id="paymentMethodConfigStatus" style="margin-top: 20px;"></div>
+                </div>
+
+                <!-- QRIS Cards Display -->
+                <div class="card">
+                    <h3>📋 Available QRIS Payment Methods</h3>
+                    <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+                        <div
+                            style="flex: 1 1 250px; min-width: 250px; max-width: 320px; background: #fafbfc; border-radius: 12px; box-shadow: 0 1px 4px #0001; padding: 24px; margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="font-weight: bold; font-size: 1.1em;">QRIS by ShopeePay</div>
+                                <span
+                                    style="background: #e6f4ea; color: #2e7d32; font-size: 0.95em; font-weight: 600; border-radius: 16px; padding: 2px 16px;">ACTIVE</span>
+                            </div>
+                            <div style="margin-top: 10px; font-size: 15px;">
+                                <b>Code:</b> QRIS<br>
+                                <b>Type:</b> direct<br>
+                                <b>Fee:</b> N/A<br>
+                                <b>Minimum:</b> N/A<br>
+                                <b>Maximum:</b> N/A
+                            </div>
+                        </div>
+                        <div
+                            style="flex: 1 1 250px; min-width: 250px; max-width: 320px; background: #fafbfc; border-radius: 12px; box-shadow: 0 1px 4px #0001; padding: 24px; margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="font-weight: bold; font-size: 1.1em;">QRIS (Customizable)</div>
+                                <span
+                                    style="background: #e6f4ea; color: #2e7d32; font-size: 0.95em; font-weight: 600; border-radius: 16px; padding: 2px 16px;">ACTIVE</span>
+                            </div>
+                            <div style="margin-top: 10px; font-size: 15px;">
+                                <b>Code:</b> QRISC<br>
+                                <b>Type:</b> direct<br>
+                                <b>Fee:</b> N/A<br>
+                                <b>Minimum:</b> N/A<br>
+                                <b>Maximum:</b> N/A
+                            </div>
+                        </div>
+                        <div
+                            style="flex: 1 1 250px; min-width: 250px; max-width: 320px; background: #fafbfc; border-radius: 12px; box-shadow: 0 1px 4px #0001; padding: 24px; margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="font-weight: bold; font-size: 1.1em;">QRIS</div>
+                                <span
+                                    style="background: #e6f4ea; color: #2e7d32; font-size: 0.95em; font-weight: 600; border-radius: 16px; padding: 2px 16px;">ACTIVE</span>
+                            </div>
+                            <div style="margin-top: 10px; font-size: 15px;">
+                                <b>Code:</b> QRIS2<br>
+                                <b>Type:</b> direct<br>
+                                <b>Fee:</b> N/A<br>
+                                <b>Minimum:</b> N/A<br>
+                                <b>Maximum:</b> N/A
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>📋 Current Configuration</h3>
+                    <div id="paymentMethodConfigInfo">
+                        <div class="loading">Loading configuration...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bot Configuration Tab -->
+            <div id="botConfig" class="tab-content">
+                <div class="card">
+                    <h3>🤖 Bot Configuration</h3>
+                    <p style="margin-bottom: 20px; color: #666;">
+                        Configure your Telegram bot messages. You can customize the welcome message that users see when
+                        they start the bot.
+                        Use {first_name} as a placeholder for the user's first name.
+                    </p>
+
+                    <form id="botConfigForm">
+                        <div class="form-group">
+                            <label for="welcomeMessage">Welcome Message</label>
+                            <textarea id="welcomeMessage" rows="15" placeholder="Enter your welcome message here..."
+                                required></textarea>
+                            <small style="color: #666;">
+                                This message will be shown when users start the bot.
+                                Use {first_name} to include the user's first name.
+                                Supports Markdown formatting.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="helpMessage">Help Message</label>
+                            <textarea id="helpMessage" rows="10"
+                                placeholder="Enter your help message here..."></textarea>
+                            <small style="color: #666;">
+                                This message will be shown when users use the /help command.
+                                Leave empty to use default message.
+                            </small>
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary">💾 Save Configuration</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadBotConfig()">🔄
+                                Refresh</button>
+                            <button type="button" class="btn btn-info" onclick="resetBotConfig()">🔄 Reset to
+                                Default</button>
+                        </div>
+                    </form>
+
+                    <div id="botConfigStatus" style="margin-top: 20px;"></div>
+                </div>
+
+                <div class="card">
+                    <h3>📋 Current Configuration</h3>
+                    <div id="botConfigInfo">
+                        <div class="loading">Loading configuration...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="users" class="tab-content">
+                <div class="card">
+                    <h3>👥 All Users</h3>
+                    <div id="usersList">
+                        <div class="loading">Loading users...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = '/api/admin';
+        const AUTH_HEADERS = {
+            'username': 'admin',
+            'password': 'admin123'
+        };
+
+        // Tab Management
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Load tab data
+            loadTabData(tabName);
+        }
+
+        function loadTabData(tabName) {
+            switch (tabName) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'products':
+                    loadProducts();
+                    loadCategories();
+                    break;
+                case 'categories':
+                    loadCategories();
+                    break;
+                case 'orders':
+                    loadOrders();
+                    break;
+                case 'transactions':
+                    loadTransactions();
+                    break;
+                case 'redeemCodes':
+                    loadRedeemCodes();
+                    break;
+                case 'tripayConfig':
+                    loadTripayConfig();
+                    break;
+                case 'paymentChannels':
+                    loadPaymentChannels();
+                    break;
+                case 'paymentMethodConfig':
+                    loadPaymentMethodConfig();
+                    break;
+                case 'botConfig':
+                    loadBotConfig();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+            }
+        }
+
+        // API Functions
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...AUTH_HEADERS,
+                        ...options.headers
+                    },
+                    ...options
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                throw error;
+            }
+        }
+
+        // Dashboard
+        async function loadDashboard() {
+            try {
+                const analytics = await apiCall('/analytics');
+                const sales = await apiCall('/analytics/sales');
+
+                // Update stats
+                document.getElementById('statsGrid').innerHTML = `
+                    <div class="stat-card">
+                        <h3>${analytics.totalProducts}</h3>
+                        <p>Total Products</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>${analytics.totalOrders}</h3>
+                        <p>Total Orders</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>${analytics.totalUsers}</h3>
+                        <p>Total Users</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>${formatRupiah(analytics.totalRevenue)}</h3>
+                        <p>Total Revenue</p>
+                    </div>
+                `;
+
+                // Update recent activity
+                const recentOrders = await apiCall('/orders?limit=5');
+                document.getElementById('recentActivity').innerHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Product</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${recentOrders.orders.map(order => `
+                                <tr>
+                                    <td>#${order.id}</td>
+                                    <td>${order.product_name}</td>
+                                    <td>${order.first_name || order.username}</td>
+                                    <td>${formatRupiah(parseFloat(order.total_price))}</td>
+                                    <td><span class="badge badge-${order.status}">${order.status}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                showAlert('Error loading dashboard data', 'error');
+            }
+        }
+
+        // Products
+        async function loadProducts() {
+            try {
+                const products = await apiCall('/products');
+
+                document.getElementById('productsList').innerHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Type</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${products.products.map(product => `
+                                <tr>
+                                    <td>${product.id}</td>
+                                    <td>${product.name}</td>
+                                    <td>${formatRupiah(product.price)}</td>
+                                    <td>${product.product_type}</td>
+                                    <td>${product.category_name || 'Uncategorized'}</td>
+                                    <td>${product.is_active ? '✅ Active' : '❌ Inactive'}</td>
+                                    <td>
+                                        <button class="btn btn-secondary" onclick="editProduct(${product.id})">Edit</button>
+                                        <button class="btn btn-primary" onclick="manageProductCodes(${product.id})">Manage Codes</button>
+                                        <button class="btn btn-danger" onclick="deleteProduct(${product.id})">Delete</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                showAlert('Error loading products', 'error');
+            }
+        }
+
+        // Categories
+        async function loadCategories() {
+            try {
+                const categories = await apiCall('/categories');
+
+                // Update category select in product form
+                const categorySelect = document.getElementById('productCategory');
+                categorySelect.innerHTML = '<option value="">Select Category</option>';
+                categories.forEach(category => {
+                    categorySelect.innerHTML += `<option value="${category.id}">${category.name}</option>`;
+                });
+
+                // Update categories list
+                document.getElementById('categoriesList').innerHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${categories.map(category => `
+                                <tr>
+                                    <td>${category.id}</td>
+                                    <td>${category.name}</td>
+                                    <td>${category.description || '-'}</td>
+                                    <td>
+                                        <button class="btn btn-secondary" onclick="editCategory(${category.id})">Edit</button>
+                                        <button class="btn btn-danger" onclick="deleteCategory(${category.id})">Delete</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                showAlert('Error loading categories', 'error');
+            }
+        }
+
+        // Orders
+        async function loadOrders() {
+            try {
+                const orders = await apiCall('/orders');
+
+                document.getElementById('ordersList').innerHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Product</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${orders.orders.map(order => `
+                                <tr>
+                                    <td>#${order.id}</td>
+                                    <td>${order.product_name}</td>
+                                    <td>${order.first_name || order.username}</td>
+                                    <td>${formatRupiah(parseFloat(order.total_price))}</td>
+                                    <td><span class="badge badge-${order.status}">${order.status}</span></td>
+                                    <td>${new Date(order.created_at).toLocaleDateString()}</td>
+                                    <td>
+                                        <button class="btn btn-success" onclick="updateOrderStatus(${order.id}, 'completed')">Complete</button>
+                                        <button class="btn btn-danger" onclick="updateOrderStatus(${order.id}, 'cancelled')">Cancel</button>
+                                        <button class="btn btn-secondary" onclick="viewOrder(${order.id})">View</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                showAlert('Error loading orders', 'error');
+            }
+        }
+
+        // Users
+        async function loadUsers() {
+            try {
+                const users = await apiCall('/users');
+
+                document.getElementById('usersList').innerHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Telegram ID</th>
+                                <th>Username</th>
+                                <th>Name</th>
+                                <th><span title='Saldo user (Rupiah)'>Balance</span></th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${users.users.map(user => `
+                                <tr>
+                                    <td>${user.id}</td>
+                                    <td>${user.telegram_id}</td>
+                                    <td>${user.username || '-'}</td>
+                                    <td>${user.first_name} ${user.last_name || ''}</td>
+                                    <td>${formatRupiah(user.balance || 0)}</td>
+                                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                                    <td>
+                                        <button class="btn btn-secondary" onclick="viewUser(${user.id})">View</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                showAlert('Error loading users', 'error');
+            }
+        }
+
+        // Form Handlers
+        document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            try {
+                const editId = e.target.dataset.editId;
+                const isEdit = !!editId;
+
+                const formData = new FormData();
+                formData.append('name', document.getElementById('productName').value);
+                formData.append('description', document.getElementById('productDescription').value);
+                formData.append('price', document.getElementById('productPrice').value);
+                formData.append('categoryId', document.getElementById('productCategory').value);
+                formData.append('productType', document.getElementById('productType').value);
+                // Hapus stockQuantity dari formData
+
+                const productType = document.getElementById('productType').value;
+                if (productType === 'file') {
+                    const file = document.getElementById('productFile').files[0];
+                    if (file) formData.append('file', file);
+                } else if (productType === 'link') {
+                    formData.append('downloadLink', document.getElementById('productLink').value);
+                } else if (productType === 'code') {
+                    formData.append('productCode', document.getElementById('productCode').value);
+                }
+
+                const url = isEdit ? `${API_BASE}/products/${editId}` : `${API_BASE}/products`;
+                const method = isEdit ? 'PUT' : 'POST';
+
+                await fetch(url, {
+                    method: method,
+                    headers: AUTH_HEADERS,
+                    body: formData
+                });
+
+                showAlert(`Product ${isEdit ? 'updated' : 'added'} successfully!`, 'success');
+                document.getElementById('addProductForm').reset();
+                delete e.target.dataset.editId;
+                e.target.querySelector('button[type="submit"]').textContent = 'Add Product';
+                loadProducts();
+            } catch (error) {
+                showAlert(`Error ${isEdit ? 'updating' : 'adding'} product`, 'error');
+            }
+        });
+
+        document.getElementById('addCategoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            try {
+                const editId = e.target.dataset.editId;
+                const isEdit = !!editId;
+
+                const url = isEdit ? `/categories/${editId}` : '/categories';
+                const method = isEdit ? 'PUT' : 'POST';
+
+                await apiCall(url, {
+                    method: method,
+                    body: JSON.stringify({
+                        name: document.getElementById('categoryName').value,
+                        description: document.getElementById('categoryDescription').value
+                    })
+                });
+
+                showAlert(`Category ${isEdit ? 'updated' : 'added'} successfully!`, 'success');
+                document.getElementById('addCategoryForm').reset();
+                delete e.target.dataset.editId;
+                e.target.querySelector('button[type="submit"]').textContent = 'Add Category';
+                loadCategories();
+            } catch (error) {
+                showAlert(`Error ${isEdit ? 'updating' : 'adding'} category`, 'error');
+            }
+        });
+
+        // Product Type Change Handler
+        document.getElementById('productType').addEventListener('change', function () {
+            const productType = this.value;
+            const fileField = document.getElementById('productFile').parentElement;
+            const linkField = document.getElementById('productLink').parentElement;
+            const codeField = document.getElementById('productCode').parentElement;
+
+            // Hide all fields
+            fileField.style.display = 'none';
+            linkField.style.display = 'none';
+            codeField.style.display = 'none';
+
+            // Show relevant field
+            if (productType === 'file') {
+                fileField.style.display = 'block';
+            } else if (productType === 'link') {
+                linkField.style.display = 'block';
+            } else if (productType === 'code') {
+                codeField.style.display = 'block';
+            }
+        });
+
+        // Button Functions
+        async function editProduct(id) {
+            try {
+                const product = await apiCall(`/products/${id}`);
+                if (product) {
+                    // Populate form with product data
+                    document.getElementById('productName').value = product.name;
+                    document.getElementById('productDescription').value = product.description || '';
+                    document.getElementById('productPrice').value = product.price;
+                    document.getElementById('productCategory').value = product.category_id || '';
+                    document.getElementById('productType').value = product.product_type;
+                    // Hapus stockQuantity dari form
+
+                    // Show relevant fields based on product type
+                    const productType = product.product_type;
+                    const fileField = document.getElementById('productFile').parentElement;
+                    const linkField = document.getElementById('productLink').parentElement;
+                    const codeField = document.getElementById('productCode').parentElement;
+
+                    fileField.style.display = 'none';
+                    linkField.style.display = 'none';
+                    codeField.style.display = 'none';
+
+                    if (productType === 'file') {
+                        fileField.style.display = 'block';
+                    } else if (productType === 'link') {
+                        linkField.style.display = 'block';
+                        document.getElementById('productLink').value = product.download_link || '';
+                    } else if (productType === 'code') {
+                        codeField.style.display = 'block';
+                        document.getElementById('productCode').value = product.product_code || '';
+                    }
+
+                    // Change form to update mode
+                    const form = document.getElementById('addProductForm');
+                    form.dataset.editId = id;
+                    form.querySelector('button[type="submit"]').textContent = 'Update Product';
+
+                    // Scroll to form
+                    document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (error) {
+                showAlert('Error loading product details', 'error');
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                try {
+                    await apiCall(`/products/${id}`, { method: 'DELETE' });
+                    showAlert('Product deleted successfully!', 'success');
+                    loadProducts();
+                } catch (error) {
+                    showAlert('Error deleting product', 'error');
+                }
+            }
+        }
+
+        async function editCategory(id) {
+            try {
+                const categories = await apiCall('/categories');
+                const category = categories.find(cat => cat.id == id);
+                if (category) {
+                    document.getElementById('categoryName').value = category.name;
+                    document.getElementById('categoryDescription').value = category.description || '';
+
+                    // Change form to update mode
+                    const form = document.getElementById('addCategoryForm');
+                    form.dataset.editId = id;
+                    form.querySelector('button[type="submit"]').textContent = 'Update Category';
+
+                    // Scroll to form
+                    document.getElementById('categories').scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (error) {
+                showAlert('Error loading category details', 'error');
+            }
+        }
+
+        async function deleteCategory(id) {
+            if (confirm('Are you sure you want to delete this category? Products in this category will be affected.')) {
+                try {
+                    await apiCall(`/categories/${id}`, { method: 'DELETE' });
+                    showAlert('Category deleted successfully!', 'success');
+                    loadCategories();
+                } catch (error) {
+                    showAlert('Error deleting category', 'error');
+                }
+            }
+        }
+
+        async function updateOrderStatus(id, status) {
+            try {
+                await apiCall(`/orders/${id}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status })
+                });
+                showAlert(`Order status updated to ${status}!`, 'success');
+                loadOrders();
+            } catch (error) {
+                showAlert('Error updating order status', 'error');
+            }
+        }
+
+        async function viewOrder(id) {
+            try {
+                const order = await apiCall(`/orders/${id}`);
+                if (order) {
+                    const modal = document.createElement('div');
+                    modal.className = 'modal';
+                    modal.innerHTML = `
+                        <div class="modal-content">
+                            <span class="close">&times;</span>
+                            <h3>Order #${order.id}</h3>
+                            <p><strong>Product:</strong> ${order.product_name}</p>
+                            <p><strong>Customer:</strong> ${order.first_name} ${order.last_name || ''}</p>
+                            <p><strong>Username:</strong> ${order.username || 'N/A'}</p>
+                            <p><strong>Quantity:</strong> ${order.quantity}</p>
+                            <p><strong>Total:</strong> ${formatRupiah(parseFloat(order.total_price))}</p>
+                            <p><strong>Status:</strong> ${order.status}</p>
+                            <p><strong>Payment Method:</strong> ${order.payment_method}</p>
+                            <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleString()}</p>
+                            <p><strong>Description:</strong> ${order.description || 'N/A'}</p>
+                        </div>
+                    `;
+
+                    document.body.appendChild(modal);
+
+                    // Close modal functionality
+                    const closeBtn = modal.querySelector('.close');
+                    closeBtn.onclick = () => modal.remove();
+                    modal.onclick = (e) => {
+                        if (e.target === modal) modal.remove();
+                    };
+                }
+            } catch (error) {
+                showAlert('Error loading order details', 'error');
+            }
+        }
+
+        async function viewUser(id) {
+            try {
+                const userData = await apiCall(`/users/${id}`);
+                const balanceData = await apiCall(`/users/${id}/balance`);
+
+                if (userData) {
+                    const modal = document.createElement('div');
+                    modal.className = 'modal';
+                    modal.innerHTML = `
+                        <div class="modal-content">
+                            <span class="close">&times;</span>
+                            <h3>User Details</h3>
+                            <p><strong>ID:</strong> ${userData.user.id}</p>
+                            <p><strong>Telegram ID:</strong> ${userData.user.telegram_id}</p>
+                            <p><strong>Username:</strong> ${userData.user.username || 'N/A'}</p>
+                            <p><strong>Name:</strong> ${userData.user.first_name} ${userData.user.last_name || ''}</p>
+                            <p><strong>Balance:</strong> ${formatRupiah(balanceData.balance)}</p>
+                            <p><strong>Joined:</strong> ${new Date(userData.user.created_at).toLocaleString()}</p>
+                            <p><strong>Admin:</strong> ${userData.user.is_admin ? 'Yes' : 'No'}</p>
+                            
+                            <div style="margin: 20px 0;">
+                                <h4>Manage Balance</h4>
+                                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                    <input type="number" id="balanceAmount" placeholder="Amount" step="0.01" style="flex: 1;">
+                                    <input type="text" id="balanceDescription" placeholder="Description" style="flex: 1;">
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="btn btn-success" onclick="adjustBalance(${id}, 'deposit')">Add Money</button>
+                                    <button class="btn btn-warning" onclick="adjustBalance(${id}, 'withdraw')">Withdraw</button>
+                                </div>
+                            </div>
+                            
+                            <h4>Recent Transactions (${balanceData.transactions.length})</h4>
+                            ${balanceData.transactions.map(transaction => `
+                                <div style="border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 5px;">
+                                    <p><strong>${transaction.type === 'deposit' ? '➕' : '➖'} ${formatRupiah(Math.abs(transaction.amount))}</strong> - ${transaction.description}</p>
+                                    <p>${new Date(transaction.created_at).toLocaleString()}</p>
+                                </div>
+                            `).join('')}
+                            
+                            <h4>Orders (${userData.orders.length})</h4>
+                            ${userData.orders.map(order => `
+                                <div style="border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 5px;">
+                                    <p><strong>Order #${order.id}</strong> - ${order.product_name}</p>
+                                    <p>${formatRupiah(parseFloat(order.total_price))} - ${order.status}</p>
+                                    <p>${new Date(order.created_at).toLocaleDateString()}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+
+                    document.body.appendChild(modal);
+
+                    // Close modal functionality
+                    const closeBtn = modal.querySelector('.close');
+                    closeBtn.onclick = () => modal.remove();
+                    modal.onclick = (e) => {
+                        if (e.target === modal) modal.remove();
+                    };
+                }
+            } catch (error) {
+                showAlert('Error loading user details', 'error');
+            }
+        }
+
+        async function adjustBalance(userId, type) {
+            const amount = parseFloat(document.getElementById('balanceAmount').value);
+            const description = document.getElementById('balanceDescription').value;
+
+            if (!amount || amount <= 0) {
+                showAlert('Please enter a valid amount', 'error');
+                return;
+            }
+
+            try {
+                const endpoint = type === 'deposit' ? 'deposit' : 'withdraw';
+                await apiCall(`/users/${userId}/balance/${endpoint}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ amount, description })
+                });
+
+                showAlert(`Balance ${type === 'deposit' ? 'added' : 'withdrawn'} successfully!`, 'success');
+                // Refresh the modal
+                document.querySelector('.modal').remove();
+                viewUser(userId);
+            } catch (error) {
+                showAlert(`Error ${type === 'deposit' ? 'adding' : 'withdrawing'} balance`, 'error');
+            }
+        }
+
+        async function loadTransactions() {
+            try {
+                const transactions = await apiCall('/transactions');
+                const transactionsList = document.getElementById('transactionsList');
+
+                if (transactions.length === 0) {
+                    transactionsList.innerHTML = '<p>No transactions found.</p>';
+                    return;
+                }
+
+                let html = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                                <th>Product</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                transactions.forEach(transaction => {
+                    const type = transaction.type === 'deposit' ? '➕ Deposit' : '➖ Withdrawal';
+                    const amountClass = transaction.type === 'deposit' ? 'text-success' : 'text-danger';
+                    const userInfo = transaction.first_name || transaction.username || 'Unknown';
+                    const productInfo = transaction.product_name || '-';
+
+                    html += `
+                        <tr>
+                            <td>${new Date(transaction.created_at).toLocaleString()}</td>
+                            <td>${userInfo}</td>
+                            <td>${type}</td>
+                            <td class="${amountClass}">${formatRupiah(Math.abs(transaction.amount))}</td>
+                            <td>${transaction.description}</td>
+                            <td>${productInfo}</td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                transactionsList.innerHTML = html;
+            } catch (error) {
+                document.getElementById('transactionsList').innerHTML = '<p>Error loading transactions.</p>';
+            }
+        }
+
+        async function loadRedeemCodes() {
+            try {
+                const codes = await apiCall('/redeem-codes');
+                const listDiv = document.getElementById('redeemCodesList');
+                if (codes.length === 0) {
+                    listDiv.innerHTML = '<p>No redeem codes found.</p>';
+                    return;
+                }
+                let html = `<table class="table"><thead><tr><th>Code</th><th>Amount</th><th>Status</th><th>Used By</th><th>Used At</th><th>Created</th><th>Actions</th></tr></thead><tbody>`;
+                codes.forEach(code => {
+                    html += `<tr>
+                        <td><code>${code.code}</code></td>
+                        <td>${formatRupiah(code.amount)}</td>
+                        <td>${code.is_used ? '<span class="badge badge-completed">Used</span>' : '<span class="badge badge-pending">Unused</span>'}</td>
+                        <td>${code.used_by_username || '-'}</td>
+                        <td>${code.used_at ? new Date(code.used_at).toLocaleString() : '-'}</td>
+                        <td>${new Date(code.created_at).toLocaleDateString()}</td>
+                        <td>${!code.is_used ? `<button class="btn btn-danger" onclick="deleteRedeemCode(${code.id})">Delete</button>` : '-'}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                listDiv.innerHTML = html;
+            } catch (error) {
+                document.getElementById('redeemCodesList').innerHTML = '<p>Error loading redeem codes.</p>';
+            }
+        }
+
+        async function createRedeemCode() {
+            const code = document.getElementById('redeemCodeManual').value.trim();
+            const amount = parseFloat(document.getElementById('redeemCodeAmount').value);
+            if (!amount || amount <= 0) {
+                showAlert('Please enter a valid amount', 'error');
+                return;
+            }
+            try {
+                await apiCall('/redeem-codes', {
+                    method: 'POST',
+                    body: JSON.stringify({ code, amount })
+                });
+                showAlert('Redeem code created!', 'success');
+                loadRedeemCodes();
+            } catch (error) {
+                showAlert('Error creating redeem code', 'error');
+            }
+        }
+
+        async function generateRedeemCode() {
+            const amount = parseFloat(document.getElementById('redeemCodeAmount').value);
+            if (!amount || amount <= 0) {
+                showAlert('Please enter a valid amount', 'error');
+                return;
+            }
+            try {
+                const res = await apiCall('/redeem-codes/generate', {
+                    method: 'POST',
+                    body: JSON.stringify({ amount })
+                });
+                showAlert('Redeem code generated: ' + res.code, 'success');
+                loadRedeemCodes();
+            } catch (error) {
+                showAlert('Error generating redeem code', 'error');
+            }
+        }
+
+        async function deleteRedeemCode(id) {
+            if (!confirm('Delete this redeem code?')) return;
+            try {
+                await apiCall(`/redeem-codes/${id}`, { method: 'DELETE' });
+                showAlert('Redeem code deleted!', 'success');
+                loadRedeemCodes();
+            } catch (error) {
+                showAlert('Error deleting redeem code', 'error');
+            }
+        }
+
+        function resetProductForm() {
+            const form = document.getElementById('addProductForm');
+            form.reset();
+            delete form.dataset.editId;
+            form.querySelector('button[type="submit"]').textContent = 'Add Product';
+
+            // Hide all type-specific fields
+            document.getElementById('productFile').parentElement.style.display = 'none';
+            document.getElementById('productLink').parentElement.style.display = 'none';
+            document.getElementById('productCode').parentElement.style.display = 'none';
+
+            showAlert('Product form reset', 'success');
+        }
+
+        function resetCategoryForm() {
+            const form = document.getElementById('addCategoryForm');
+            form.reset();
+            delete form.dataset.editId;
+            form.querySelector('button[type="submit"]').textContent = 'Add Category';
+            showAlert('Category form reset', 'success');
+        }
+
+        async function manageProductCodes(productId) {
+            try {
+                const response = await apiCall(`/products/${productId}/codes`);
+                const { codes, count } = response;
+
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <h3>Manage Product Codes</h3>
+                        <div style="margin-bottom: 20px;">
+                            <p><strong>Total Codes:</strong> ${count.total}</p>
+                            <p><strong>Available:</strong> ${count.available}</p>
+                            <p><strong>Used:</strong> ${count.total - count.available}</p>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h4>Generate New Codes</h4>
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                <input type="number" id="codeCount" placeholder="Number of codes" min="1" max="100" style="flex: 1;">
+                                <input type="text" id="codePrefix" placeholder="Prefix (optional)" style="flex: 1;">
+                                <button class="btn btn-primary" onclick="generateCodes(${productId})">Generate</button>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h4>Add Manual Codes</h4>
+                            <textarea id="manualCodes" placeholder="Enter codes, one per line" rows="4" style="width: 100%; margin-bottom: 10px;"></textarea>
+                            <button class="btn btn-secondary" onclick="addManualCodes(${productId})">Add Codes</button>
+                        </div>
+                        
+                        <h4>All Codes</h4>
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Status</th>
+                                        <th>Used By</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${codes.map(code => `
+                                        <tr>
+                                            <td><code>${code.code}</code></td>
+                                            <td>
+                                                <span class="badge badge-${code.is_used ? 'completed' : 'pending'}">
+                                                    ${code.is_used ? 'Used' : 'Available'}
+                                                </span>
+                                            </td>
+                                            <td>${code.first_name || code.username || '-'}</td>
+                                            <td>${new Date(code.created_at).toLocaleDateString()}</td>
+                                            <td>
+                                                ${!code.is_used ? `<button class="btn btn-danger" onclick="deleteCode(${code.id})">Delete</button>` : '-'}
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(modal);
+
+                // Close modal functionality
+                const closeBtn = modal.querySelector('.close');
+                closeBtn.onclick = () => modal.remove();
+                modal.onclick = (e) => {
+                    if (e.target === modal) modal.remove();
+                };
+            } catch (error) {
+                showAlert('Error loading product codes', 'error');
+            }
+        }
+
+        async function generateCodes(productId) {
+            const count = document.getElementById('codeCount').value;
+            const prefix = document.getElementById('codePrefix').value;
+
+            if (!count || count <= 0) {
+                showAlert('Please enter a valid number of codes', 'error');
+                return;
+            }
+
+            try {
+                await apiCall(`/products/${productId}/codes/generate`, {
+                    method: 'POST',
+                    body: JSON.stringify({ count: parseInt(count), prefix })
+                });
+
+                showAlert(`${count} codes generated successfully!`, 'success');
+                // Refresh the modal
+                document.querySelector('.modal').remove();
+                manageProductCodes(productId);
+            } catch (error) {
+                showAlert('Error generating codes', 'error');
+            }
+        }
+
+        async function addManualCodes(productId) {
+            const codesText = document.getElementById('manualCodes').value;
+            if (!codesText.trim()) {
+                showAlert('Please enter some codes', 'error');
+                return;
+            }
+
+            const codes = codesText.split('\n').map(code => code.trim()).filter(code => code.length > 0);
+
+            try {
+                await apiCall(`/products/${productId}/codes`, {
+                    method: 'POST',
+                    body: JSON.stringify({ codes })
+                });
+
+                showAlert(`${codes.length} codes added successfully!`, 'success');
+                // Refresh the modal
+                document.querySelector('.modal').remove();
+                manageProductCodes(productId);
+            } catch (error) {
+                showAlert('Error adding codes', 'error');
+            }
+        }
+
+        async function deleteCode(codeId) {
+            if (confirm('Are you sure you want to delete this code?')) {
+                try {
+                    await apiCall(`/codes/${codeId}`, { method: 'DELETE' });
+                    showAlert('Code deleted successfully!', 'success');
+                    // Refresh the modal by finding the product ID from the current modal
+                    const modal = document.querySelector('.modal');
+                    const productId = modal.querySelector('button[onclick^="generateCodes"]').getAttribute('onclick').match(/\d+/)[0];
+                    modal.remove();
+                    manageProductCodes(productId);
+                } catch (error) {
+                    showAlert('Error deleting code', 'error');
+                }
+            }
+        }
+
+        // Tripay Configuration Functions
+        async function loadTripayConfig() {
+            try {
+                const response = await apiCall('/tripay-config');
+                const config = response.data;
+
+                // Populate form fields
+                document.getElementById('tripayApiKey').value = config.TRIPAY_API_KEY || '';
+                document.getElementById('tripayPrivateKey').value = config.TRIPAY_PRIVATE_KEY || '';
+                document.getElementById('tripayMerchantCode').value = config.TRIPAY_MERCHANT_CODE || '';
+                document.getElementById('tripayEnvironment').value = config.TRIPAY_ENVIRONMENT || 'sandbox';
+
+                // Update configuration info
+                document.getElementById('tripayConfigInfo').innerHTML = `
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                        <h4>Current Configuration</h4>
+                        <table class="table">
+                            <tr>
+                                <td><strong>API Key:</strong></td>
+                                <td>${config.TRIPAY_API_KEY ? '✅ Configured' : '❌ Not configured'}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Private Key:</strong></td>
+                                <td>${config.TRIPAY_PRIVATE_KEY ? '✅ Configured' : '❌ Not configured'}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Merchant Code:</strong></td>
+                                <td>${config.TRIPAY_MERCHANT_CODE ? '✅ Configured' : '❌ Not configured'}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Environment:</strong></td>
+                                <td>${config.TRIPAY_ENVIRONMENT || 'sandbox'}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Base URL:</strong></td>
+                                <td>${config.TRIPAY_BASE_URL || 'https://tripay.co.id/api'}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Sandbox URL:</strong></td>
+                                <td>${config.TRIPAY_SANDBOX_URL || 'https://tripay.co.id/api-sandbox'}</td>
+                            </tr>
+                        </table>
+                    </div>
+                `;
+            } catch (error) {
+                showAlert('Error loading Tripay configuration', 'error');
+                document.getElementById('tripayConfigInfo').innerHTML = '<div class="alert alert-error">Error loading configuration</div>';
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('tripayConfigForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                TRIPAY_API_KEY: document.getElementById('tripayApiKey').value,
+                TRIPAY_PRIVATE_KEY: document.getElementById('tripayPrivateKey').value,
+                TRIPAY_MERCHANT_CODE: document.getElementById('tripayMerchantCode').value,
+                TRIPAY_ENVIRONMENT: document.getElementById('tripayEnvironment').value
+            };
+
+            try {
+                const response = await apiCall('/tripay-config', {
+                    method: 'POST',
+                    body: JSON.stringify(formData)
+                });
+
+                showAlert(response.message, 'success');
+                loadTripayConfig(); // Refresh the configuration display
+            } catch (error) {
+                showAlert('Error saving Tripay configuration', 'error');
+            }
+        });
+
+        async function testTripayConfig() {
+            const formData = {
+                TRIPAY_API_KEY: document.getElementById('tripayApiKey').value,
+                TRIPAY_PRIVATE_KEY: document.getElementById('tripayPrivateKey').value,
+                TRIPAY_MERCHANT_CODE: document.getElementById('tripayMerchantCode').value,
+                TRIPAY_ENVIRONMENT: document.getElementById('tripayEnvironment').value
+            };
+
+            if (!formData.TRIPAY_API_KEY || !formData.TRIPAY_PRIVATE_KEY || !formData.TRIPAY_MERCHANT_CODE) {
+                showAlert('Please fill in all required fields before testing', 'error');
+                return;
+            }
+
+            try {
+                const statusDiv = document.getElementById('tripayConfigStatus');
+                statusDiv.innerHTML = '<div class="loading">Testing connection...</div>';
+
+                const response = await apiCall('/tripay-config/test', {
+                    method: 'POST',
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.success) {
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <h4>✅ Connection Test Successful!</h4>
+                            <p><strong>Environment:</strong> ${response.data.environment}</p>
+                            <p><strong>Base URL:</strong> ${response.data.baseUrl}</p>
+                            <p><strong>Payment Channels Available:</strong> ${response.data.paymentChannels}</p>
+                            <p>Your Tripay configuration is working correctly!</p>
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-error">
+                            <h4>❌ Connection Test Failed</h4>
+                            <p><strong>Error:</strong> ${response.error}</p>
+                            <p>Please check your configuration and try again.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('tripayConfigStatus').innerHTML = `
+                    <div class="alert alert-error">
+                        <h4>❌ Connection Test Failed</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Please check your configuration and try again.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Payment Method Configuration Functions
+        async function loadPaymentMethodConfig() {
+            try {
+                const response = await apiCall('/payment-method-config');
+
+                if (response.success && response.data) {
+                    // Set dropdown sesuai default_method dari backend
+                    document.getElementById('defaultPaymentMethod').value = response.data.default_method || 'QRIS';
+                    // Display current configuration
+                    displayPaymentMethodConfig(response.data);
+                } else {
+                    showAlert('Failed to load QRIS payment method configuration', 'error');
+                }
+            } catch (error) {
+                showAlert('Error loading QRIS payment method configuration: ' + error.message, 'error');
+            }
+        }
+
+        function displayPaymentMethodConfig(config) {
+            const container = document.getElementById('paymentMethodConfigInfo');
+            // Mapping code ke label
+            const labelMap = {
+                QRIS: 'QRIS by ShopeePay',
+                QRISC: 'QRIS (Customizable)',
+                QRIS2: 'QRIS'
+            };
+            // Default label
+            const defaultLabel = labelMap[config.default_method] || config.default_method;
+            // Available methods label
+            const availableLabels = (config.available_methods || ['QRIS', 'QRISC', 'QRIS2'])
+                .map(code => labelMap[code] || code)
+                .join(', ');
+            container.innerHTML = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <h4 style="margin: 0 0 15px 0; color: #333;">QRIS Payment Settings</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div>
+                            <p><strong>Default QRIS Payment Method:</strong></p>
+                            <p style="color: #667eea; font-weight: 600; margin: 5px 0;">${defaultLabel}</p>
+                        </div>
+                        <div>
+                            <p><strong>Available Methods:</strong></p>
+                            <p style="color: #666; margin: 5px 0;">${availableLabels}</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; font-size: 14px; color: #666;">
+                        <p><strong>Status:</strong> <span style="color: #28a745;">Active</span></p>
+                        <p><strong>Last Updated:</strong> ${new Date(config.updated_at).toLocaleString()}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Form submission handler for payment method configuration
+        document.addEventListener('DOMContentLoaded', function () {
+            const paymentMethodConfigForm = document.getElementById('paymentMethodConfigForm');
+            if (paymentMethodConfigForm) {
+                paymentMethodConfigForm.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+
+                    try {
+                        // Ambil value dari dropdown
+                        const defaultMethod = document.getElementById('defaultPaymentMethod').value;
+                        // Available methods tetap QRIS, QRISC, QRIS2
+                        const availableMethods = ['QRIS', 'QRISC', 'QRIS2'];
+
+                        const response = await apiCall('/payment-method-config', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                default_method: defaultMethod,
+                                available_methods: availableMethods
+                            })
+                        });
+
+                        if (response.success) {
+                            showAlert('QRIS payment method configuration saved successfully!', 'success');
+                            loadPaymentMethodConfig(); // Refresh the display
+                        } else {
+                            showAlert('Failed to save configuration: ' + response.error, 'error');
+                        }
+                    } catch (error) {
+                        showAlert('Error saving configuration: ' + error.message, 'error');
+                    }
+                });
+            }
+        });
+
+        // Bot Configuration Functions
+        async function loadBotConfig() {
+            try {
+                const response = await apiCall('/bot-config');
+
+                if (response.success && response.data) {
+                    // Set form values
+                    document.getElementById('welcomeMessage').value = response.data.welcome_message || '';
+                    document.getElementById('helpMessage').value = response.data.help_message || '';
+
+                    // Display current configuration
+                    displayBotConfig(response.data);
+                } else {
+                    showAlert('Failed to load bot configuration', 'error');
+                }
+            } catch (error) {
+                showAlert('Error loading bot configuration: ' + error.message, 'error');
+            }
+        }
+
+        function displayBotConfig(config) {
+            const container = document.getElementById('botConfigInfo');
+            container.innerHTML = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <h4 style="margin: 0 0 15px 0; color: #333;">Bot Message Settings</h4>
+                    <div style="margin-bottom: 15px;">
+                        <p><strong>Welcome Message:</strong></p>
+                        <div style="background: white; padding: 15px; border-radius: 5px; border: 1px solid #e9ecef; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px; white-space: pre-wrap;">
+                            ${config.welcome_message || 'Not set'}
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <p><strong>Help Message:</strong></p>
+                        <div style="background: white; padding: 15px; border-radius: 5px; border: 1px solid #e9ecef; max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 12px; white-space: pre-wrap;">
+                            ${config.help_message || 'Not set (using default)'}
+                        </div>
+                    </div>
+                    <div style="font-size: 14px; color: #666;">
+                        <p><strong>Status:</strong> <span style="color: #28a745;">Active</span></p>
+                        <p><strong>Last Updated:</strong> ${new Date(config.updated_at).toLocaleString()}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function resetBotConfig() {
+            const defaultWelcomeMessage = `🛍️ *Selamat Datang di Toko Produk Digital!*
+
+Hai {first_name}! 👋
+
+Saya adalah asisten produk digital Anda. Berikut yang dapat Anda lakukan:
+
+📋 *Perintah:*
+• /shop - Jelajahi produk kami
+• /cart - Lihat keranjang belanja Anda
+• /orders - Periksa riwayat pesanan
+• /balance - Periksa saldo Anda
+• /deposit - Tambahkan uang ke saldo
+• /help - Dapatkan bantuan
+
+🎮 *Fitur:*
+• Jelajahi produk digital
+• Tambahkan item ke keranjang
+• Bayar dengan saldo
+• Pengiriman instan
+• Pelacakan pesanan
+• Manajemen saldo
+
+Siap untuk mulai berbelanja? Gunakan /shop untuk menjelajahi produk kami!`;
+
+            document.getElementById('welcomeMessage').value = defaultWelcomeMessage;
+            document.getElementById('helpMessage').value = '';
+            showAlert('Bot configuration reset to default values', 'info');
+        }
+
+        // Form submission handler for bot configuration
+        document.addEventListener('DOMContentLoaded', function () {
+            const botConfigForm = document.getElementById('botConfigForm');
+            if (botConfigForm) {
+                botConfigForm.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+
+                    try {
+                        const welcomeMessage = document.getElementById('welcomeMessage').value.trim();
+                        const helpMessage = document.getElementById('helpMessage').value.trim();
+
+                        if (!welcomeMessage) {
+                            showAlert('Welcome message is required', 'error');
+                            return;
+                        }
+
+                        const response = await apiCall('/bot-config', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                welcome_message: welcomeMessage,
+                                help_message: helpMessage || null
+                            })
+                        });
+
+                        if (response.success) {
+                            showAlert('Bot configuration saved successfully!', 'success');
+                            loadBotConfig(); // Refresh the display
+                        } else {
+                            showAlert('Failed to save configuration: ' + response.error, 'error');
+                        }
+                    } catch (error) {
+                        showAlert('Error saving configuration: ' + error.message, 'error');
+                    }
+                });
+            }
+        });
+
+        // Utility Functions
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+
+            document.querySelector('.content').insertBefore(alertDiv, document.querySelector('.content').firstChild);
+
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+        });
+
+        // Tambahkan fungsi utilitas formatRupiah di awal <script>
+        function formatRupiah(amount) {
+            if (isNaN(amount)) return '-';
+            return 'Rp' + amount.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+    </script>
+</body>
+
+</html>
