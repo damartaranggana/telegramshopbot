@@ -518,7 +518,6 @@ Hubungi tim dukungan kami untuk bantuan.
 
 Pilih jumlah untuk ditambahkan ke saldo Anda:
 
-*Jumlah Deposit:*
 • ${this.formatRupiah(50000)}
 • ${this.formatRupiah(100000)} 
 • ${this.formatRupiah(250000)}
@@ -1010,10 +1009,20 @@ Gunakan tombol di bawah untuk mengakses fitur admin.
                     inline_keyboard: keyboardButtons
                 };
 
-                await this.bot.sendMessage(chatId, message, {
-                    parse_mode: 'Markdown',
-                    reply_markup: keyboard
-                });
+                if (qrUrl) {
+                    // Kirim gambar QRIS sebagai foto
+                    await this.bot.sendPhoto(chatId, qrUrl, {
+                        caption: message,
+                        parse_mode: 'Markdown',
+                        reply_markup: keyboard
+                    });
+                } else {
+                    // Fallback ke pesan biasa jika tidak ada QR
+                    await this.bot.sendMessage(chatId, message, {
+                        parse_mode: 'Markdown',
+                        reply_markup: keyboard
+                    });
+                }
             } else {
                 throw new Error('Failed to create payment');
             }

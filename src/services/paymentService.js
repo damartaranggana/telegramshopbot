@@ -14,7 +14,7 @@ class PaymentService {
     /**
      * Create a payment transaction for balance purchase
      * @param {number} userId - User ID from database
-     * @param {number} amount - Amount to add to balance
+     * @param {number} amount - Amount to add to balance (in IDR)
      * @param {string} customerName - Customer name
      * @param {string} customerPhone - Customer phone (optional)
      * @param {string} customerEmail - Customer email (optional)
@@ -25,9 +25,8 @@ class PaymentService {
             // Generate unique merchant reference
             const merchantRef = generateMerchantRef('BAL');
 
-            // Convert USD to IDR (fixed rate)
-            const USD_TO_IDR = 10000;
-            const amountIdr = Math.round(amount * USD_TO_IDR);
+            // Amount is already in IDR, no conversion needed
+            const amountIdr = Math.round(amount);
 
             // Get default payment method from configuration
             const paymentConfig = await this.db.getPaymentMethodConfig();
@@ -43,7 +42,7 @@ class PaymentService {
                 customer_phone: customerPhone,
                 order_items: [
                     {
-                        name: `Balance Top Up ($${amount.toFixed(2)})`,
+                        name: `Balance Top Up (Rp ${amount.toLocaleString()})`,
                         price: amountIdr, // Price in IDR
                         quantity: 1
                     }
@@ -63,7 +62,7 @@ class PaymentService {
             // Create transaction in Tripay
             const tripayResponse = await tripayService.createTransaction(transactionData);
 
-            // Store payment record in database (amount in USD)
+            // Store payment record in database (amount in IDR)
             await this.db.run(`
                 INSERT INTO balance_payments (
                     user_id, 
@@ -78,7 +77,7 @@ class PaymentService {
                 userId,
                 merchantRef,
                 tripayResponse.data.reference,
-                amount, // Store USD amount for balance
+                amount, // Store IDR amount for balance
                 'PENDING',
                 tripayResponse.data.payment_url
             ]);
@@ -90,8 +89,8 @@ class PaymentService {
                     merchantRef: merchantRef,
                     paymentUrl: tripayResponse.data.payment_url || tripayResponse.data.qr_url, // Use qr_url as fallback for QRIS
                     qrUrl: tripayResponse.data.qr_url,
-                    amount: amount, // USD
-                    amountIdr: amountIdr, // IDR
+                    amount: amount, // IDR
+                    amountIdr: amountIdr, // IDR (same as amount)
                     status: 'PENDING'
                 }
             };
@@ -239,73 +238,76 @@ class PaymentService {
                     reference: reference,
                     merchant_ref: payment.merchant_ref,
                     status: tripayStatus,
-                    amount: tripayResponse.data.amount
+                    amount: payment.amount
                 };
 
                 // Process the status change
-                return await this.processPaymentCallback(callbackData);
+                const result = await this.processPaymentCallback(callbackData);
+
+                return {
+                    success: true,
+                    message: 'Payment status updated',
+                    data: {
+                        status: tripayStatus,
+                        reference,
+                        previousStatus: payment.status,
+                        ...result.data
+                    }
+                };
             }
 
             return {
                 success: true,
-                message: 'Payment status checked',
+                message: 'Payment status unchanged',
                 data: { status: tripayStatus, reference }
             };
 
         } catch (error) {
             console.error('Error polling payment status:', error);
-            throw error;
+            return { success: false, message: 'Error polling payment status', error: error.message };
         }
     }
 
     /**
-     * Auto-poll all pending payments
-     * This should be called periodically (e.g., every 5 minutes)
+     * Poll all pending payments and update their status
+     * @returns {Promise<Array>} - Array of updated payments
      */
     async pollAllPendingPayments() {
         try {
-            console.log('Starting auto-poll for pending payments...');
-
-            // Check if database is available
-            if (!this.db || !this.db.db) {
-                console.error('Database not available for polling');
-                return [];
-            }
+            console.log('Polling all pending payments...');
 
             // Get all pending payments
             const pendingPayments = await this.db.all(`
                 SELECT * FROM balance_payments 
-                WHERE status IN ('PENDING', 'UNPAID') 
-                AND created_at > datetime('now', '-24 hours')
+                WHERE status IN ('PENDING', 'UNPAID')
+                ORDER BY created_at ASC
             `);
 
-            console.log(`Found ${pendingPayments.length} pending payments to poll`);
+            console.log(`Found ${pendingPayments.length} pending payments`);
 
             const results = [];
+
             for (const payment of pendingPayments) {
                 try {
                     const result = await this.pollPaymentStatus(payment.tripay_reference);
-                    results.push({
-                        reference: payment.tripay_reference,
-                        result: result
-                    });
+                    if (result.success && result.data.status !== payment.status) {
+                        results.push({
+                            reference: payment.tripay_reference,
+                            oldStatus: payment.status,
+                            newStatus: result.data.status,
+                            ...result.data
+                        });
+                    }
                 } catch (error) {
-                    console.error('Error polling payment:', payment.tripay_reference, error.message);
-                    results.push({
-                        reference: payment.tripay_reference,
-                        error: error.message
-                    });
+                    console.error(`Error polling payment ${payment.tripay_reference}:`, error);
                 }
-
-                // Add delay between requests to avoid rate limiting
-                await new Promise(resolve => setTimeout(resolve, 1000));
             }
 
-            console.log('Auto-poll completed:', results);
+            console.log(`Updated ${results.length} payments`);
             return results;
 
         } catch (error) {
-            console.error('Error in auto-poll:', error);
+            console.error('Error polling all pending payments:', error);
             return [];
         }
     }
@@ -317,64 +319,75 @@ class PaymentService {
      */
     async getPaymentStatus(reference) {
         try {
-            // Get from Tripay API
-            const tripayResponse = await tripayService.getTransactionDetail(reference);
-
-            // Get from local database
+            // Get from local database first
             const payment = await this.db.get(`
                 SELECT * FROM balance_payments 
                 WHERE tripay_reference = ?
             `, [reference]);
 
-            return {
-                success: true,
-                data: {
-                    tripay: tripayResponse.data,
-                    local: payment
-                }
-            };
+            if (!payment) {
+                return { success: false, message: 'Payment not found' };
+            }
+
+            // If payment is already paid, return local status
+            if (payment.status === 'PAID') {
+                return {
+                    success: true,
+                    data: {
+                        status: payment.status,
+                        reference,
+                        amount: payment.amount,
+                        created_at: payment.created_at
+                    }
+                };
+            }
+
+            // Otherwise, poll from Tripay
+            return await this.pollPaymentStatus(reference);
 
         } catch (error) {
             console.error('Error getting payment status:', error);
-            throw error;
+            return { success: false, message: 'Error getting payment status', error: error.message };
         }
     }
 
     /**
-     * Get user's payment history
+     * Get user payment history
      * @param {number} userId - User ID
      * @param {number} limit - Number of records to return
      * @returns {Promise<Array>} - Payment history
      */
     async getUserPaymentHistory(userId, limit = 10) {
         try {
-            const payments = await this.db.all(`
+            return await this.db.all(`
                 SELECT * FROM balance_payments 
                 WHERE user_id = ? 
                 ORDER BY created_at DESC 
                 LIMIT ?
             `, [userId, limit]);
-
-            return payments;
-
         } catch (error) {
-            console.error('Error getting payment history:', error);
-            throw error;
+            console.error('Error getting user payment history:', error);
+            return [];
         }
     }
 
     /**
      * Get available payment methods
-     * @returns {Promise<Array>} - Available payment methods
+     * @returns {Promise<Object>} - Payment methods configuration
      */
     async getPaymentMethods() {
         try {
-            const response = await tripayService.getPaymentChannels();
-            return response.data;
-
+            const config = await this.db.getPaymentMethodConfig();
+            return {
+                default: config ? config.default_method : 'QRIS',
+                available: config ? JSON.parse(config.available_methods || '["QRIS"]') : ['QRIS']
+            };
         } catch (error) {
             console.error('Error getting payment methods:', error);
-            throw error;
+            return {
+                default: 'QRIS',
+                available: ['QRIS']
+            };
         }
     }
 }

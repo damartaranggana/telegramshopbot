@@ -20,12 +20,12 @@ async function testBotPayment() {
 
         // Test payment data
         const userId = 20; // Use existing user ID
-        const amount = 5; // $5.00
+        const amount = 10000; // Rp 10.000
         const customerName = 'Test User';
 
         console.log('📝 Test Data:');
         console.log(`User ID: ${userId}`);
-        console.log(`Amount: $${amount}`);
+        console.log(`Amount: Rp ${amount.toLocaleString()}`);
         console.log(`Customer Name: ${customerName}`);
         console.log('');
 
@@ -53,7 +53,7 @@ async function testBotPayment() {
             const message = `
 💳 *Payment Created Successfully!*
 
-💰 *Amount:* $${amount.toFixed(2)}
+💰 *Amount:* Rp ${amount.toLocaleString()}
 🔢 *Reference:* \`${reference}\`
 🏷️ *Merchant Ref:* \`${merchantRef}\`
 

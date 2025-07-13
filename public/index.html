@@ -459,7 +459,28 @@
                                 <option value="code">🔑 Kode</option>
                             </select>
                         </div>
-                        <!-- Hapus input productLink dari form produk -->
+
+                        <!-- File upload field -->
+                        <div class="form-group" id="fileField" style="display: none;">
+                            <label for="productFile">Upload File</label>
+                            <input type="file" id="productFile" accept="*/*">
+                            <small style="color: #666;">Upload file produk digital</small>
+                        </div>
+
+                        <!-- Link field -->
+                        <div class="form-group" id="linkField" style="display: none;">
+                            <label for="productLink">Download Link</label>
+                            <input type="url" id="productLink" placeholder="https://example.com/download">
+                            <small style="color: #666;">Link untuk download produk</small>
+                        </div>
+
+                        <!-- Code field -->
+                        <div class="form-group" id="codeField" style="display: none;">
+                            <label for="productCode">Product Code</label>
+                            <input type="text" id="productCode" placeholder="Masukkan kode produk">
+                            <small style="color: #666;">Kode produk digital</small>
+                        </div>
+
                         <button type="submit" class="btn btn-primary">Tambah Produk</button>
                         <button type="button" class="btn btn-secondary" onclick="resetProductForm()">Produk
                             Baru</button>
@@ -1105,19 +1126,29 @@
                 const url = isEdit ? `${API_BASE}/products/${editId}` : `${API_BASE}/products`;
                 const method = isEdit ? 'PUT' : 'POST';
 
-                await fetch(url, {
+                const response = await fetch(url, {
                     method: method,
-                    headers: AUTH_HEADERS,
+                    headers: {
+                        'username': AUTH_HEADERS.username,
+                        'password': AUTH_HEADERS.password
+                    },
                     body: formData
                 });
 
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
                 showAlert(`Product ${isEdit ? 'updated' : 'added'} successfully!`, 'success');
                 document.getElementById('addProductForm').reset();
                 delete e.target.dataset.editId;
-                e.target.querySelector('button[type="submit"]').textContent = 'Add Product';
+                e.target.querySelector('button[type="submit"]').textContent = 'Tambah Produk';
                 loadProducts();
             } catch (error) {
-                showAlert(`Error ${isEdit ? 'updating' : 'adding'} product`, 'error');
+                console.error('Error details:', error);
+                showAlert(`Error ${isEdit ? 'updating' : 'adding'} product: ${error.message}`, 'error');
             }
         });
 
@@ -1152,9 +1183,9 @@
         // Product Type Change Handler
         document.getElementById('productType').addEventListener('change', function () {
             const productType = this.value;
-            const fileField = document.getElementById('productFile').parentElement;
-            const linkField = document.getElementById('productLink').parentElement;
-            const codeField = document.getElementById('productCode').parentElement;
+            const fileField = document.getElementById('fileField');
+            const linkField = document.getElementById('linkField');
+            const codeField = document.getElementById('codeField');
 
             // Hide all fields
             fileField.style.display = 'none';
@@ -1186,9 +1217,9 @@
 
                     // Show relevant fields based on product type
                     const productType = product.product_type;
-                    const fileField = document.getElementById('productFile').parentElement;
-                    const linkField = document.getElementById('productLink').parentElement;
-                    const codeField = document.getElementById('productCode').parentElement;
+                    const fileField = document.getElementById('fileField');
+                    const linkField = document.getElementById('linkField');
+                    const codeField = document.getElementById('codeField');
 
                     fileField.style.display = 'none';
                     linkField.style.display = 'none';
@@ -1530,12 +1561,12 @@
             const form = document.getElementById('addProductForm');
             form.reset();
             delete form.dataset.editId;
-            form.querySelector('button[type="submit"]').textContent = 'Add Product';
+            form.querySelector('button[type="submit"]').textContent = 'Tambah Produk';
 
             // Hide all type-specific fields
-            document.getElementById('productFile').parentElement.style.display = 'none';
-            document.getElementById('productLink').parentElement.style.display = 'none';
-            document.getElementById('productCode').parentElement.style.display = 'none';
+            document.getElementById('fileField').style.display = 'none';
+            document.getElementById('linkField').style.display = 'none';
+            document.getElementById('codeField').style.display = 'none';
 
             showAlert('Product form reset', 'success');
         }
