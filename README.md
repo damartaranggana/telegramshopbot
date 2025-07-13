@@ -476,4 +476,4 @@ If you encounter any issues or have questions:
 
 ---
 
-**Made with ❤️ for digital entrepreneurs** 
+**Made with ❤️ by DhamarTaranggana** 
