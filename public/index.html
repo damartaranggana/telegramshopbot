@@ -425,7 +425,6 @@
                 <div class="nav-tab" onclick="showTab('transactions')">💰 Transactions</div>
                 <div class="nav-tab" onclick="showTab('redeemCodes')">🎟️ Redeem Codes</div>
                 <div class="nav-tab" onclick="showTab('tripayConfig')">💳 Tripay Config</div>
-                <div class="nav-tab" onclick="showTab('paymentMethodConfig')">⚙️ QRIS Payment Config</div>
                 <div class="nav-tab" onclick="showTab('botConfig')">🤖 Bot Config</div>
                 <div class="nav-tab" onclick="showTab('users')">👥 Users</div>
             </div>
@@ -628,10 +627,8 @@
                         <div class="loading">Loading configuration...</div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Payment Method Configuration Tab -->
-            <div id="paymentMethodConfig" class="tab-content">
+                <!-- QRIS Payment Method Configuration -->
                 <div class="card">
                     <h3>⚙️ QRIS Payment Method Configuration</h3>
                     <p style="margin-bottom: 20px; color: #666;">
@@ -652,9 +649,9 @@
                         </div>
 
                         <div style="margin-top: 20px;">
-                            <button type="submit" class="btn btn-primary">💾 Save Configuration</button>
+                            <button type="submit" class="btn btn-primary">💾 Save QRIS Configuration</button>
                             <button type="button" class="btn btn-secondary" onclick="loadPaymentMethodConfig()">🔄
-                                Refresh</button>
+                                Refresh QRIS</button>
                         </div>
                     </form>
 
@@ -714,12 +711,14 @@
                 </div>
 
                 <div class="card">
-                    <h3>📋 Current Configuration</h3>
+                    <h3>📋 Current QRIS Configuration</h3>
                     <div id="paymentMethodConfigInfo">
-                        <div class="loading">Loading configuration...</div>
+                        <div class="loading">Loading QRIS configuration...</div>
                     </div>
                 </div>
             </div>
+
+
 
             <!-- Bot Configuration Tab -->
             <div id="botConfig" class="tab-content">
@@ -871,12 +870,10 @@
                     break;
                 case 'tripayConfig':
                     loadTripayConfig();
+                    loadPaymentMethodConfig();
                     break;
                 case 'paymentChannels':
                     loadPaymentChannels();
-                    break;
-                case 'paymentMethodConfig':
-                    loadPaymentMethodConfig();
                     break;
                 case 'botConfig':
                     loadBotConfig();
