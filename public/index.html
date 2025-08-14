@@ -400,11 +400,53 @@
             }
 
             .modal-content {
-                width: 95%;
-                margin: 10% auto;
-                padding: 20px;
-            }
+            width: 95%;
+            margin: 10% auto;
+            padding: 20px;
         }
+    }
+
+    /* Pagination Styles */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px 0;
+        gap: 10px;
+    }
+
+    .pagination button {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        background: white;
+        color: #333;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .pagination button:hover {
+        background: #f0f0f0;
+    }
+
+    .pagination button.active {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+
+    .pagination button:disabled {
+        background: #f8f9fa;
+        color: #6c757d;
+        cursor: not-allowed;
+        border-color: #dee2e6;
+    }
+
+    .pagination .page-info {
+        margin: 0 15px;
+        color: #666;
+        font-size: 14px;
+    }
     </style>
 </head>
 
@@ -964,45 +1006,107 @@
             }
         }
 
-        // Products
-        async function loadProducts() {
-            try {
-                const products = await apiCall('/products');
+        // Products with Pagination
+        let currentProductsPage = 1;
+        const productsPerPage = 5;
+        let allProducts = [];
 
-                document.getElementById('productsList').innerHTML = `
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Price</th>
-                                <th>Type</th>
-                                <th>Category</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${products.products.map(product => `
-                                <tr>
-                                    <td>${product.id}</td>
-                                    <td>${product.name}</td>
-                                    <td>${formatRupiah(product.price)}</td>
-                                    <td>${product.product_type}</td>
-                                    <td>${product.category_name || 'Uncategorized'}</td>
-                                    <td>${product.is_active ? '✅ Active' : '❌ Inactive'}</td>
-                                    <td>
-                                        <button class="btn btn-secondary" onclick="editProduct(${product.id})">Edit</button>
-                                        <button class="btn btn-primary" onclick="manageProductCodes(${product.id})">Manage Codes</button>
-                                        <button class="btn btn-danger" onclick="deleteProduct(${product.id})">Delete</button>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
+        async function loadProducts(page = 1) {
+            try {
+                const products = await apiCall('/products?limit=1000');
+                allProducts = products.products;
+                currentProductsPage = page;
+                displayProductsPage();
             } catch (error) {
                 showAlert('Error loading products', 'error');
+            }
+        }
+
+        function displayProductsPage() {
+            const startIndex = (currentProductsPage - 1) * productsPerPage;
+            const endIndex = startIndex + productsPerPage;
+            const pageProducts = allProducts.slice(startIndex, endIndex);
+            const totalPages = Math.ceil(allProducts.length / productsPerPage);
+
+            document.getElementById('productsList').innerHTML = `
+                <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>📦 Total Products: ${allProducts.length}</strong>
+                    </div>
+                    <div>
+                        <span style="color: #666;">Showing ${startIndex + 1}-${Math.min(endIndex, allProducts.length)} of ${allProducts.length} products</span>
+                    </div>
+                </div>
+                
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${pageProducts.map(product => `
+                            <tr>
+                                <td>${product.id}</td>
+                                <td>${product.name}</td>
+                                <td>${formatRupiah(product.price)}</td>
+                                <td>${product.product_type}</td>
+                                <td>${product.category_name || 'Uncategorized'}</td>
+                                <td>${product.is_active ? '✅ Active' : '❌ Inactive'}</td>
+                                <td>
+                                    <button class="btn btn-secondary" onclick="editProduct(${product.id})">Edit</button>
+                                    <button class="btn btn-primary" onclick="manageProductCodes(${product.id})">Manage Codes</button>
+                                    <button class="btn btn-danger" onclick="deleteProduct(${product.id})">Delete</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                ${totalPages > 1 ? `
+                    <div class="pagination">
+                        <button onclick="goToProductsPage(1)" ${currentProductsPage === 1 ? 'disabled' : ''}>⏮️ First</button>
+                        <button onclick="goToProductsPage(${currentProductsPage - 1})" ${currentProductsPage === 1 ? 'disabled' : ''}>⬅️ Prev</button>
+                        
+                        ${generateProductsPaginationButtons(currentProductsPage, totalPages)}
+                        
+                        <div class="page-info">Page ${currentProductsPage} of ${totalPages}</div>
+                        
+                        <button onclick="goToProductsPage(${currentProductsPage + 1})" ${currentProductsPage === totalPages ? 'disabled' : ''}>Next ➡️</button>
+                        <button onclick="goToProductsPage(${totalPages})" ${currentProductsPage === totalPages ? 'disabled' : ''}>Last ⏭️</button>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        function generateProductsPaginationButtons(currentPage, totalPages) {
+            let buttons = '';
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                buttons += `<button onclick="goToProductsPage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+            }
+            
+            return buttons;
+        }
+
+        function goToProductsPage(page) {
+            const totalPages = Math.ceil(allProducts.length / productsPerPage);
+            if (page >= 1 && page <= totalPages) {
+                currentProductsPage = page;
+                displayProductsPage();
             }
         }
 
