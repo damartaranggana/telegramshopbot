@@ -236,9 +236,12 @@ Hubungi tim dukungan kami untuk bantuan.
         await this.showProducts(msg.chat.id);
     }
 
-    async showProducts(chatId, categoryId = null) {
+    async showProducts(chatId, categoryId = null, page = 1) {
         try {
-            let products;
+            const productsPerPage = 5; // Menampilkan 5 produk per halaman
+            const offset = (page - 1) * productsPerPage;
+
+            let products, totalProducts;
             if (categoryId) {
                 products = await this.db.all(`
           SELECT p.*, c.name as category_name 
@@ -246,15 +249,39 @@ Hubungi tim dukungan kami untuk bantuan.
           LEFT JOIN categories c ON p.category_id = c.id 
           WHERE p.is_active = 1 AND p.category_id = ?
           ORDER BY p.created_at DESC
+          LIMIT ? OFFSET ?
+        `, [categoryId, productsPerPage, offset]);
+                
+                const totalResult = await this.db.get(`
+          SELECT COUNT(*) as total 
+          FROM products p 
+          WHERE p.is_active = 1 AND p.category_id = ?
         `, [categoryId]);
+                totalProducts = totalResult.total;
             } else {
-                products = await this.db.getAllProducts();
+                products = await this.db.all(`
+          SELECT p.*, c.name as category_name 
+          FROM products p 
+          LEFT JOIN categories c ON p.category_id = c.id 
+          WHERE p.is_active = 1
+          ORDER BY p.created_at DESC
+          LIMIT ? OFFSET ?
+        `, [productsPerPage, offset]);
+                
+                const totalResult = await this.db.get(`
+          SELECT COUNT(*) as total 
+          FROM products p 
+          WHERE p.is_active = 1
+        `);
+                totalProducts = totalResult.total;
             }
 
-            if (products.length === 0) {
+            if (totalProducts === 0) {
                 await this.bot.sendMessage(chatId, '😔 Tidak ada produk yang tersedia saat ini.');
                 return;
             }
+
+            const totalPages = Math.ceil(totalProducts / productsPerPage);
 
             // Get categories for filter
             const categories = await this.db.getAllCategories();
@@ -262,21 +289,20 @@ Hubungi tim dukungan kami untuk bantuan.
             // Create category filter keyboard
             const categoryButtons = categories.map(cat => [{
                 text: cat.name,
-                callback_data: `category_${cat.id}`
+                callback_data: `category_${cat.id}_page_1`
             }]);
 
             const keyboard = {
                 inline_keyboard: [
                     ...categoryButtons,
-                    [{ text: '🏠 Semua Produk', callback_data: 'category_all' }],
-                    [{ text: '🛒 Lihat Keranjang', callback_data: 'cart' }],
-                    [{ text: '🏠 Kembali ke Menu', callback_data: 'start' }]
+                    [{ text: '🏠 Semua Produk', callback_data: 'category_all_page_1' }]
                 ]
             };
 
-            let message = '🛍️ *Produk yang Tersedia*\n\n';
+            let message = `🛍️ *Produk yang Tersedia*\n\n`;
+            message += `📄 Halaman ${page} dari ${totalPages} (${totalProducts} produk)\n\n`;
 
-            for (const product of products.slice(0, 10)) { // Show first 10 products
+            for (const product of products) {
                 const price = parseFloat(product.price);
                 const codeCount = await this.db.getProductCodesCount(product.id);
                 const stock = codeCount.available > 0 ? codeCount.available : 'Habis Stok';
@@ -294,9 +320,37 @@ Hubungi tim dukungan kami untuk bantuan.
                 ]);
             }
 
-            if (products.length > 10) {
-                message += `\n*Menampilkan 10 produk pertama. Gunakan filter kategori untuk melihat lebih banyak.*`;
+            // Add pagination buttons
+            if (totalPages > 1) {
+                const paginationButtons = [];
+                
+                // Previous button
+                if (page > 1) {
+                    const prevCallback = categoryId ? 
+                        `category_${categoryId}_page_${page - 1}` : 
+                        `category_all_page_${page - 1}`;
+                    paginationButtons.push({ text: '⬅️ Sebelumnya', callback_data: prevCallback });
+                }
+                
+                // Page info
+                paginationButtons.push({ text: `${page}/${totalPages}`, callback_data: 'page_info' });
+                
+                // Next button
+                if (page < totalPages) {
+                    const nextCallback = categoryId ? 
+                        `category_${categoryId}_page_${page + 1}` : 
+                        `category_all_page_${page + 1}`;
+                    paginationButtons.push({ text: 'Selanjutnya ➡️', callback_data: nextCallback });
+                }
+                
+                keyboard.inline_keyboard.push(paginationButtons);
             }
+
+            // Add navigation buttons
+            keyboard.inline_keyboard.push([
+                { text: '🛒 Lihat Keranjang', callback_data: 'cart' },
+                { text: '🏠 Kembali ke Menu', callback_data: 'start' }
+            ]);
 
             await this.bot.sendMessage(chatId, message, {
                 parse_mode: 'Markdown',
@@ -619,11 +673,25 @@ Gunakan tombol di bawah untuk mengakses fitur admin.
             } else if (data === 'orders') {
                 await this.showOrders(chatId);
             } else if (data.startsWith('category_')) {
-                const categoryId = data.replace('category_', '');
-                if (categoryId === 'all') {
-                    await this.showProducts(chatId);
+                // Handle category with pagination: category_ID_page_N or category_all_page_N
+                const parts = data.split('_');
+                if (parts.length >= 3 && parts[parts.length - 2] === 'page') {
+                    const page = parseInt(parts[parts.length - 1]);
+                    const categoryPart = parts.slice(1, -2).join('_');
+                    
+                    if (categoryPart === 'all') {
+                        await this.showProducts(chatId, null, page);
+                    } else {
+                        await this.showProducts(chatId, categoryPart, page);
+                    }
                 } else {
-                    await this.showProducts(chatId, categoryId);
+                    // Fallback for old format
+                    const categoryId = data.replace('category_', '');
+                    if (categoryId === 'all') {
+                        await this.showProducts(chatId);
+                    } else {
+                        await this.showProducts(chatId, categoryId);
+                    }
                 }
             } else if (data.startsWith('add_to_cart_')) {
                 await this.handleAddToCart(chatId, data.replace('add_to_cart_', ''));
@@ -663,6 +731,9 @@ Gunakan tombol di bawah untuk mengakses fitur admin.
             } else if (data === 'redeem_code') {
                 this.userStates.set(chatId, { state: 'awaiting_redeem_code' });
                 await this.bot.sendMessage(chatId, '🎟️ Silakan masukkan kode penukaran Anda:');
+            } else if (data === 'page_info') {
+                // Do nothing, this is just an info button
+                return;
             }
 
         } catch (error) {
