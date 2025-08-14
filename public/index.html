@@ -454,28 +454,12 @@
                             <label for="productType">Tipe Produk</label>
                             <select id="productType" required>
                                 <option value="">Pilih Tipe</option>
-                                <option value="file">📁 File</option>
-                                <option value="link">🔗 Link</option>
                                 <option value="code">🔑 Kode</option>
                             </select>
                         </div>
 
-                        <!-- File upload field -->
-                        <div class="form-group" id="fileField" style="display: none;">
-                            <label for="productFile">Upload File</label>
-                            <input type="file" id="productFile" accept="*/*">
-                            <small style="color: #666;">Upload file produk digital</small>
-                        </div>
-
-                        <!-- Link field -->
-                        <div class="form-group" id="linkField" style="display: none;">
-                            <label for="productLink">Download Link</label>
-                            <input type="url" id="productLink" placeholder="https://example.com/download">
-                            <small style="color: #666;">Link untuk download produk</small>
-                        </div>
-
                         <!-- Code field -->
-                        <div class="form-group" id="codeField" style="display: none;">
+                        <div class="form-group" id="codeField">
                             <label for="productCode">Product Code</label>
                             <input type="text" id="productCode" placeholder="Masukkan kode produk">
                             <small style="color: #666;">Kode produk digital</small>
@@ -1114,12 +1098,8 @@
                 // Hapus stockQuantity dari formData
 
                 const productType = document.getElementById('productType').value;
-                if (productType === 'file') {
-                    const file = document.getElementById('productFile').files[0];
-                    if (file) formData.append('file', file);
-                } else if (productType === 'link') {
-                    formData.append('downloadLink', document.getElementById('productLink').value);
-                } else if (productType === 'code') {
+                // Only handle code type since other types are removed
+                if (productType === 'code') {
                     formData.append('productCode', document.getElementById('productCode').value);
                 }
 
@@ -1180,26 +1160,10 @@
             }
         });
 
-        // Product Type Change Handler
+        // Product Type Change Handler - Code field is always visible now
         document.getElementById('productType').addEventListener('change', function () {
-            const productType = this.value;
-            const fileField = document.getElementById('fileField');
-            const linkField = document.getElementById('linkField');
-            const codeField = document.getElementById('codeField');
-
-            // Hide all fields
-            fileField.style.display = 'none';
-            linkField.style.display = 'none';
-            codeField.style.display = 'none';
-
-            // Show relevant field
-            if (productType === 'file') {
-                fileField.style.display = 'block';
-            } else if (productType === 'link') {
-                linkField.style.display = 'block';
-            } else if (productType === 'code') {
-                codeField.style.display = 'block';
-            }
+            // Code field is always visible since it's the only option
+            // No need to show/hide fields anymore
         });
 
         // Button Functions
@@ -1215,25 +1179,8 @@
                     document.getElementById('productType').value = product.product_type;
                     // Hapus stockQuantity dari form
 
-                    // Show relevant fields based on product type
-                    const productType = product.product_type;
-                    const fileField = document.getElementById('fileField');
-                    const linkField = document.getElementById('linkField');
-                    const codeField = document.getElementById('codeField');
-
-                    fileField.style.display = 'none';
-                    linkField.style.display = 'none';
-                    codeField.style.display = 'none';
-
-                    if (productType === 'file') {
-                        fileField.style.display = 'block';
-                    } else if (productType === 'link') {
-                        linkField.style.display = 'block';
-                        document.getElementById('productLink').value = product.download_link || '';
-                    } else if (productType === 'code') {
-                        codeField.style.display = 'block';
-                        document.getElementById('productCode').value = product.product_code || '';
-                    }
+                    // Populate code field since it's the only supported type
+                    document.getElementById('productCode').value = product.product_code || '';
 
                     // Change form to update mode
                     const form = document.getElementById('addProductForm');
@@ -1562,11 +1509,6 @@
             form.reset();
             delete form.dataset.editId;
             form.querySelector('button[type="submit"]').textContent = 'Tambah Produk';
-
-            // Hide all type-specific fields
-            document.getElementById('fileField').style.display = 'none';
-            document.getElementById('linkField').style.display = 'none';
-            document.getElementById('codeField').style.display = 'none';
 
             showAlert('Product form reset', 'success');
         }
