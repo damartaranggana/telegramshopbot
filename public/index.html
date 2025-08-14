@@ -33,6 +33,7 @@
             color: white;
             padding: 30px;
             text-align: center;
+            position: relative;
         }
 
         .header h1 {
@@ -43,6 +44,25 @@
         .header p {
             font-size: 1.1em;
             opacity: 0.9;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
         }
 
         .nav {
@@ -391,6 +411,7 @@
 <body>
     <div class="container">
         <div class="header">
+            <button class="logout-btn" onclick="logout()">🚪 Logout</button>
             <h1>🛍️ Telegram Bot Shop</h1>
             <p>Admin Panel - Manage your digital products</p>
         </div>
@@ -765,6 +786,43 @@
     </div>
 
     <script>
+        // Authentication Check
+        function checkAuthentication() {
+            const isLoggedIn = localStorage.getItem('adminLoggedIn');
+            const loginTime = localStorage.getItem('adminLoginTime');
+            const currentTime = new Date().getTime();
+            const sessionDuration = 24 * 60 * 60 * 1000; // 24 hours
+
+            if (!isLoggedIn || isLoggedIn !== 'true') {
+                redirectToLogin();
+                return false;
+            }
+
+            // Check if session has expired
+            if (loginTime && (currentTime - parseInt(loginTime)) > sessionDuration) {
+                logout();
+                return false;
+            }
+
+            return true;
+        }
+
+        function redirectToLogin() {
+            window.location.href = 'login.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            localStorage.removeItem('adminLoginTime');
+            redirectToLogin();
+        }
+
+        // Check authentication on page load
+        if (!checkAuthentication()) {
+            // Stop execution if not authenticated
+            throw new Error('Not authenticated');
+        }
+
         // API Configuration
         const API_BASE = '/api/admin';
         const AUTH_HEADERS = {
