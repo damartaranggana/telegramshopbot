@@ -458,12 +458,7 @@
                             </select>
                         </div>
 
-                        <!-- Code field -->
-                        <div class="form-group" id="codeField">
-                            <label for="productCode">Product Code</label>
-                            <input type="text" id="productCode" placeholder="Masukkan kode produk">
-                            <small style="color: #666;">Kode produk digital</small>
-                        </div>
+
 
                         <button type="submit" class="btn btn-primary">Tambah Produk</button>
                         <button type="button" class="btn btn-secondary" onclick="resetProductForm()">Produk
@@ -1098,10 +1093,7 @@
                 // Hapus stockQuantity dari formData
 
                 const productType = document.getElementById('productType').value;
-                // Only handle code type since other types are removed
-                if (productType === 'code') {
-                    formData.append('productCode', document.getElementById('productCode').value);
-                }
+                // Product code field has been removed
 
                 const url = isEdit ? `${API_BASE}/products/${editId}` : `${API_BASE}/products`;
                 const method = isEdit ? 'PUT' : 'POST';
@@ -1179,8 +1171,7 @@
                     document.getElementById('productType').value = product.product_type;
                     // Hapus stockQuantity dari form
 
-                    // Populate code field since it's the only supported type
-                    document.getElementById('productCode').value = product.product_code || '';
+                    // Product code field has been removed
 
                     // Change form to update mode
                     const form = document.getElementById('addProductForm');
